@@ -19,6 +19,10 @@ class Task:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, ensure_ascii=False, indent=4)
 
+    @property
+    def id(self):
+        return self.ID
+
 
 
 
