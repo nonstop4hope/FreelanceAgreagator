@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from bs4 import BeautifulSoup
 from FreelanceHabr.models import Task
@@ -6,6 +8,11 @@ from time import sleep
 import random
 from MongoDBAPI.MongoDBAPI import Mongod
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
 
 class FreelanceHabr:
 
@@ -62,7 +69,8 @@ class FreelanceHabr:
 
                     habr_tasks.append(habr_task.to_json())
 
-                    mongod.add_habr_tasks_to_db(habr_task)
+                    if mongod.add_habr_tasks_to_db(habr_task):
+                        logger.info(f'Append new task to db from site habr.com! Task name: \"{habr_task.name}\"')
 
         return habr_tasks
 

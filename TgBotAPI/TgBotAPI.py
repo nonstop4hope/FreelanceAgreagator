@@ -1,15 +1,12 @@
 import logging
 import token
 from uuid import uuid4
-
 from telegram import InlineQueryResultArticle, ParseMode, InputTextMessageContent, Update, InlineKeyboardButton, \
     InlineKeyboardMarkup, Bot
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, CallbackContext
 from telegram.utils.helpers import escape_markdown
-
-# Enable logging
 from MongoDBAPI.MongoDBAPI import Mongod
-from TgBotAPI.config import BOT_TOKEN
+from TgBotAPI.Keyboards.default_keyboards import Keyboards
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -18,19 +15,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
 def start(update: Update, context: CallbackContext) -> None:
 
-    keyboard = [
-        [
-            InlineKeyboardButton("Последние новости", callback_data='last_tasks'),
-            InlineKeyboardButton("Остановить бота", callback_data='stop_bot'),
-        ],
-        [InlineKeyboardButton("Подписаться на рассылку", callback_data='subscribe')],
-    ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    reply_markup = InlineKeyboardMarkup(Keyboards.start_menu())
 
     update.message.reply_text('Добро пожаловать!\nЭтот бот поможет Вам всегда оставаться в курсе событий.\n'
                               'Для продолжения работы выберите один из пунктов меню. При выборе пункта "Подписаться'
@@ -48,9 +35,19 @@ def callback_start_menu(update: Update, context: CallbackContext) -> None:
         id = query.from_user.id
         query.edit_message_text(text=f"Последние новости для Вас, надеюсь они будут полезны")
         for task in last_tasks:
-            context.bot.send_message(chat_id=id, text=f'{task["date"]}\n'
-                                                               f'{task["price"]}\n'
-                                                               f'{task["url"]}')
+            description = task["description"]
+            if len(description) > 300:
+                description = description[:300] + '...'
+            message = f'Название: {task["name"]}\n' \
+                      f'Дата размещения: {task["date"]}\n' \
+                      f'Описание: {description}\n' \
+                      f'Цена: {task["price"]}\n' \
+                      f'Просмотры: {task["views"]}\n' \
+                      f'Откликнулось: {task["responses"]}\n' \
+                      f'Ссылка на задание: {task["url"]}\n'
+
+            context.bot.send_message(chat_id=id, text=message, disable_web_page_preview=True, parse_mode='HTML')
+
     if query.data == 'stop_bot':
         query.edit_message_text(text=f"Эта кнопка ничего не делает ☹️")
     if query.data == 'subscribe':
