@@ -48,7 +48,7 @@ def callback_start_menu(update: Update, context: CallbackContext) -> None:
         id = query.from_user.id
         query.edit_message_text(text=f"Последние новости для Вас, надеюсь они будут полезны")
         for task in last_tasks:
-            Bot(token=BOT_TOKEN).send_message(chat_id=id, text=f'{task["date"]}\n'
+            context.bot.send_message(chat_id=id, text=f'{task["date"]}\n'
                                                                f'{task["price"]}\n'
                                                                f'{task["url"]}')
     if query.data == 'stop_bot':
